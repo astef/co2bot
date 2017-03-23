@@ -1,0 +1,14 @@
+{
+  "Frequency": 60000, // ms
+  "LongRepeatDelayMin": 60,
+  "ShortRepeatCount": 3,
+  "Co2DataPath": "",
+  "SendToConsole": false,
+  "RedCo2": 1200,
+  "YellowCo2": 800,
+  "RedTemp": 24,
+  "BlueTemp": 22,
+  "HttpUrl": "https://adapter.yamstr.com/0bddbaf7369d86a1a674234557b3872c/-168138256?text=",
+  "MorningTime": "07:00",
+  "EveningTime": "23:00"
+}
