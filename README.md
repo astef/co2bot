@@ -3,7 +3,7 @@ Telegram bot (russian) which notifies about air quality metrics (CO2 &amp; tempe
 
 Integrated with CSV files from this device: https://dadget.ru/detektor-co2
 
-Sends notifications with GET request to URL.
+Sends notifications via GET request to URL.
 
 Options:
 ```javascript
