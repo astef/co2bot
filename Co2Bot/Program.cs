@@ -24,14 +24,19 @@ namespace Co2Bot
                 var now = DateTime.Now;
                 try
                 {
-                    var lines = new string[0];
+                    string[] lines;
                     try
                     {
-                        lines = File.ReadAllLines($"{options.Co2DataPath}/{now.Year}/{now.ToString("MM")}/{now.ToString("dd")}.CSV").Last().Split(',');
+                        lines =
+                            File.ReadAllLines(
+                                $"{options.Co2DataPath}/{now.Year}/{now.ToString("MM")}/{now.ToString("dd")}.CSV")
+                                .Last()
+                                .Split(',');
                     }
                     catch (Exception e)
                     {
                         Log($"Exception reading file. Do not start. {e.Message}");
+                        continue;
                     }
                     if (lines.Length < 2)
                     {
@@ -57,7 +62,9 @@ namespace Co2Bot
                     var temp = double.Parse(lines[2], CultureInfo.InvariantCulture);
                     if (!greet)
                     {
-                        Send($"Бот проверки качества воздуха запущен на машине {Environment.MachineName}. Текущие параметры воздуха в кабинете: CO2 = {co2} ppm; температура = {temp} C", options);
+                        Send(
+                            $"Бот проверки качества воздуха запущен на машине {Environment.MachineName}. Текущие параметры воздуха в кабинете: CO2 = {co2} ppm; температура = {temp} C",
+                            options);
                         greet = true;
                     }
                     if (co2 > options.RedCo2)
@@ -90,7 +97,10 @@ namespace Co2Bot
                     Log($"Exception.Message: {ee.Message}");
                     Log($"Exception.ToString: {ee}");
                 }
-                System.Threading.Thread.Sleep(Math.Max(options.Frequency, 1000));
+                finally
+                {
+                    System.Threading.Thread.Sleep(Math.Max(options.Frequency, 1000));
+                }
             }
         }
 
@@ -107,18 +117,27 @@ namespace Co2Bot
             }
         }
 
-        private static void Log(string msg)
+        private static readonly object LastLogSyncRoot = new object();
+
+        private static string _lastLog;
+
+        private static void Log(string msg, bool allowRepeat = false)
         {
-            // delete 1-week ago log
-            var now = DateTime.Now;
-            File.Delete(MakeLogFileName(now.AddDays(-7.0)));
-            //
-            var log = $"{now.ToString("HH:mm:ss.fff")}: {msg}";
-            File.AppendAllLines(MakeLogFileName(now), new[]
+            lock (LastLogSyncRoot)
             {
-               log
-            });
-            Console.WriteLine(log);
+                if (!allowRepeat && _lastLog == msg)
+                    return;
+
+                // delete 1-week ago log
+                var now = DateTime.Now;
+                File.Delete(MakeLogFileName(now.AddDays(-7.0)));
+                //
+                var log = $"{now.ToString("HH:mm:ss.fff")}: {msg}";
+                File.AppendAllLines(MakeLogFileName(now), new[] { log });
+                Console.WriteLine(log);
+
+                _lastLog = msg;
+            }
         }
 
         private static string MakeLogFileName(DateTime dt)
